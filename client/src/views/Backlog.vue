@@ -1,53 +1,51 @@
 <template>
   <div class="backlog">
     <div class="page-header">
-      <h2>Backlog Management</h2>
-      <p>Track and resolve inventory shortages</p>
+      <h2>{{ t('backlog.title') }}</h2>
+      <p>{{ t('backlog.description') }}</p>
     </div>
 
-    <div v-if="loading" class="loading">Loading backlog...</div>
+    <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else>
       <div class="stats-grid">
         <div class="stat-card danger">
-          <div class="stat-label">High Priority</div>
-          <div class="stat-value">{{ getBacklogByPriority('high').length }}</div>
+          <div class="stat-label">{{ t('backlog.highPriority') }}</div>
+          <div class="stat-value">{{ highPriorityItems.length }}</div>
         </div>
         <div class="stat-card warning">
-          <div class="stat-label">Medium Priority</div>
-          <div class="stat-value">{{ getBacklogByPriority('medium').length }}</div>
+          <div class="stat-label">{{ t('backlog.mediumPriority') }}</div>
+          <div class="stat-value">{{ mediumPriorityItems.length }}</div>
         </div>
         <div class="stat-card info">
-          <div class="stat-label">Low Priority</div>
-          <div class="stat-value">{{ getBacklogByPriority('low').length }}</div>
+          <div class="stat-label">{{ t('backlog.lowPriority') }}</div>
+          <div class="stat-value">{{ lowPriorityItems.length }}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Total Backlog Items</div>
+          <div class="stat-label">{{ t('backlog.totalItems') }}</div>
           <div class="stat-value">{{ backlogItems.length }}</div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">Backlog Items</h3>
+          <h3 class="card-title">{{ t('backlog.backlogItems') }}</h3>
         </div>
-        <div v-if="backlogItems.length === 0" style="padding: 3rem; text-align: center;">
-          <p style="font-size: 1.125rem; color: #10b981; font-weight: 600;">
-            ✓ No backlog items - all orders can be fulfilled!
-          </p>
+        <div v-if="backlogItems.length === 0" class="empty-state">
+          <p class="empty-message">{{ t('backlog.empty') }}</p>
         </div>
         <div v-else class="table-container">
           <table>
             <thead>
               <tr>
-                <th>Order ID</th>
-                <th>SKU</th>
-                <th>Item Name</th>
-                <th>Quantity Needed</th>
-                <th>Quantity Available</th>
-                <th>Shortage</th>
-                <th>Days Delayed</th>
-                <th>Priority</th>
+                <th>{{ t('backlog.table.orderId') }}</th>
+                <th>{{ t('backlog.table.sku') }}</th>
+                <th>{{ t('backlog.table.itemName') }}</th>
+                <th>{{ t('backlog.table.quantityNeeded') }}</th>
+                <th>{{ t('backlog.table.quantityAvailable') }}</th>
+                <th>{{ t('backlog.table.shortage') }}</th>
+                <th>{{ t('backlog.table.daysDelayed') }}</th>
+                <th>{{ t('backlog.table.priority') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -59,17 +57,17 @@
                 <td>{{ item.quantity_available }}</td>
                 <td>
                   <span class="badge danger">
-                    {{ item.quantity_needed - item.quantity_available }} units short
+                    {{ t('backlog.unitsShort', { count: item.quantity_needed - item.quantity_available }) }}
                   </span>
                 </td>
                 <td>
-                  <span :style="{ color: item.days_delayed > 7 ? '#ef4444' : '#f59e0b' }">
-                    {{ item.days_delayed }} days
+                  <span :class="getDelayClass(item.days_delayed)">
+                    {{ t('backlog.daysDelayed', { count: item.days_delayed }) }}
                   </span>
                 </td>
                 <td>
                   <span :class="['badge', item.priority]">
-                    {{ item.priority }}
+                    {{ t('priority.' + item.priority) }}
                   </span>
                 </td>
               </tr>
@@ -85,10 +83,13 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { api } from '../api'
 import { useFilters } from '../composables/useFilters'
+import { useI18n } from '../composables/useI18n'
 
 export default {
   name: 'Backlog',
   setup() {
+    const { t } = useI18n()
+
     const loading = ref(true)
     const error = ref(null)
     const allBacklogItems = ref([])
@@ -108,9 +109,14 @@ export default {
       return allBacklogItems.value.filter(b => validSkus.has(b.item_sku))
     })
 
+    const highPriorityItems = computed(() => backlogItems.value.filter(item => item.priority === 'high'))
+    const mediumPriorityItems = computed(() => backlogItems.value.filter(item => item.priority === 'medium'))
+    const lowPriorityItems = computed(() => backlogItems.value.filter(item => item.priority === 'low'))
+
     const loadBacklog = async () => {
       try {
         loading.value = true
+        error.value = null
         const filters = getCurrentFilters()
 
         const [backlogData, inventoryData] = await Promise.all([
@@ -124,14 +130,15 @@ export default {
         allBacklogItems.value = backlogData
         inventoryItems.value = inventoryData
       } catch (err) {
-        error.value = 'Failed to load backlog: ' + err.message
+        error.value = t('backlog.loadFailed') + ': ' + err.message
+        console.error('Failed to load backlog:', err)
       } finally {
         loading.value = false
       }
     }
 
-    const getBacklogByPriority = (priority) => {
-      return backlogItems.value.filter(item => item.priority === priority)
+    const getDelayClass = (daysDelayed) => {
+      return daysDelayed > 7 ? 'delay-high' : 'delay-medium'
     }
 
     // Watch for filter changes and reload data
@@ -142,11 +149,36 @@ export default {
     onMounted(loadBacklog)
 
     return {
+      t,
       loading,
       error,
       backlogItems,
-      getBacklogByPriority
+      highPriorityItems,
+      mediumPriorityItems,
+      lowPriorityItems,
+      getDelayClass
     }
   }
 }
 </script>
+
+<style scoped>
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+}
+
+.empty-message {
+  font-size: 1.125rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.delay-high {
+  color: #ef4444;
+}
+
+.delay-medium {
+  color: #f59e0b;
+}
+</style>
