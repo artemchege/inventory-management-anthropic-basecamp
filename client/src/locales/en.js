@@ -6,6 +6,7 @@ export default {
     orders: 'Orders',
     finance: 'Finance',
     demandForecast: 'Demand Forecast',
+  restocking: 'Restocking',
     companyName: 'Catalyst Components',
     subtitle: 'Inventory Management System'
   },
@@ -106,6 +107,8 @@ export default {
     title: 'Orders',
     description: 'View and manage customer orders',
     allOrders: 'All Orders',
+    submittedOrders: 'Submitted Orders',
+    noSubmittedOrders: 'No restocking orders submitted yet.',
     totalOrders: 'Total Orders',
     totalRevenue: 'Total Revenue',
     avgOrderValue: 'Avg Order Value',
@@ -124,6 +127,7 @@ export default {
       value: 'Value',
       totalValue: 'Total Value',
       status: 'Status',
+      leadTime: 'Lead Time',
       expectedDelivery: 'Expected Delivery',
       actualDelivery: 'Actual Delivery'
     }
@@ -185,6 +189,46 @@ export default {
       change: 'Change',
       trend: 'Trend',
       period: 'Period'
+    }
+  },
+
+  // Restocking
+  restocking: {
+    title: 'Restocking',
+    description: 'Turn your available budget into a restocking order',
+    budget: 'Available Budget',
+    budgetHint: 'Drag to set how much you can spend this cycle',
+    recommended: 'Recommended Items',
+    recommendedCount: '{count} of {total} items fit your budget',
+    budgetUsed: 'Budget Used',
+    budgetRemaining: 'Remaining',
+    itemsSelected: 'Items Selected',
+    totalUnits: 'Total Units',
+    destination: 'Delivery to',
+    placeOrder: 'Place Order',
+    noRecommendations: 'No forecast items fit this budget. Increase the budget to see recommendations.',
+    noShortfall: 'No items are forecast to run short in this category.',
+    nothingSelected: 'Select at least one item to place an order.',
+    submitFailed: 'Could not place the order',
+    successTitle: 'Order placed',
+    successBody: 'Order {orderNumber} is on its way, expected {date}.',
+    viewInOrders: 'View in Orders',
+    confirmTitle: 'Confirm Restocking Order',
+    confirmBody: 'This order will be submitted to your suppliers.',
+    confirmItems: 'Items',
+    confirmUnits: 'Units',
+    confirmTotal: 'Order Total',
+    confirmDelivery: 'Expected Delivery',
+    confirmLeadTime: 'Lead Time',
+    confirm: 'Place Order',
+    table: {
+      sku: 'SKU',
+      itemName: 'Item Name',
+      category: 'Category',
+      shortfall: 'Shortfall',
+      unitCost: 'Unit Cost',
+      lineTotal: 'Line Total',
+      leadTime: 'Lead Time'
     }
   },
 
